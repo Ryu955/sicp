@@ -17,7 +17,6 @@ a
 
 (define (sum-num a b c) (+ a b c))
 
-
 (define (get-min-num a b)(if (> a b)
                              b
                              a))
