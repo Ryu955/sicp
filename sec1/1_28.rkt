@@ -19,32 +19,89 @@
 ; memo: 「nを法とした1の自明でない平方根」
 ; 1でもn - 1でもないがその二乗がnを法として1になる数がなかったか調べる
 
-; とりあえず、使う側だけ定義
-(define (miller-rabin-test n)
-  (define (try-it a)
-    (= (expmod a (- n 1) n) 1))
-  (try-it (+ 1 (random (- n 1)))))
-
 ; いつもの
 (define (square x) (* x x))
 
-; こいつを変える必要がありそう
+; ---- 確認 ----
+
+; a = 5, n = 3
+; 5^3-1 (mod 3)
+(remainder (square 5) 3)
+; -> 1
+; 1になっている
+
+; a = ３, n = 4
+; 3^3 (mod 4)
+(remainder (* 3 3 3) 4)
+; -> 3
+; 1にならない
+
+; n=561（カーマイケル数）
+; a^560 (mod 561) -> かならず1にならないはず
+; ----------
+
+; とりあえず、使う側だけ定義
+; a^n-1 ≡ 1 (mod n) になるかをテスト
+(define (miller-rabin-test n)
+  (define (try-it a)
+    ;(display a)
+    (= (expmod a (- n 1) n) 1))
+  (try-it (+ 1 (random (- n 1)))))
+
+
+; base^exp (mod m)
 (define (expmod base exp m)
   (cond ((= exp 0) 1)
         ((even? exp)
-         (remainder (square (expmod base (/ exp 2) m))
-                    m))
+         (let (
+               ; 
+               (x (expmod base (/ exp 2) m))
+               )
+           (let (
+                 (y (square x))
+                 )
+             (if (= y 1)
+                 (if (or (= x 1) (= x (- m 1)))
+                     (remainder y m)
+                     0
+                     )
+                 (remainder y m)
+                 )
+           )))
         (else
          (remainder (* base (expmod base (- exp 1) m))
                     m))))
 
-; 二乗が1になるが、それ自体は1でも  n - 1  でもない
-(define (check-sqrt? x n)
-  (cond ((= x 1) #f)
-        ((= x (- n 1)) #f)
-        (else #t)))
-
-(miller-rabin-test 1105)
+(miller-rabin-test 5)
 ; -> #t
+
+
+(define (fast-prime? n times)
+  (cond ((= times 0) true)
+        ((miller-rabin-test n) (fast-prime? n (- times 1)))
+        (else false)))
+
+
+(fast-prime? 3 10)
+; -> #t
+(fast-prime? 199 10)
+; -> #t
+(fast-prime? 1999 10)
+; -> #t
+(fast-prime? 19999 10)
+; -> #f
+(fast-prime? 561 10)
+; -> #f
+(fast-prime? 1105 10)
+; -> #f
+(fast-prime? 1729 10)
+; -> #f
+(fast-prime? 2465 10)
+; -> #f
+(fast-prime? 2821 10)
+; -> #f
+(fast-prime? 6601 10)
+; -> #f
+
 
 
