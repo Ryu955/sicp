@@ -111,3 +111,7 @@
 
 
 
+
+
+(par1 (make-center-percent 10 10) (make-center-percent 20 5))
+(par2 (make-center-percent 10 10) (make-center-percent 20 5))
